@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - 'v*'  
+
+jobs:
+  build-x86_64:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Build py2app x86_64
+        run: |
+          poetry shell
+          python scripts/setup.py py2app
+
+      - name: Upload x86_64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pomodoro-Timer-x86_64
+          path: dist/Pomodoro\ Timer.app
+
+  build-arm64:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Build py2app arm64
+        run: |
+          poetry shell
+          python scripts/setup.py py2app
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pomodoro-Timer-arm64
+          path: dist/Pomodoro\ Timer.app
+
+  universal:
+    needs: [build-x86_64, build-arm64]
+    runs-on: macos-15
+    steps:
+      - name: Download x86_64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Pomodoro-Timer-x86_64
+          path: dist/x86_64
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Pomodoro-Timer-arm64
+          path: dist/arm64
+
+      - name: Create universal binary
+        run: |
+          mkdir -p dist/universal/Pomodoro\ Timer.app/Contents/MacOS
+          lipo -create \
+            dist/x86_64/Pomodoro\ Timer.app/Contents/MacOS/Pomodoro\ Timer \
+            dist/arm64/Pomodoro\ Timer.app/Contents/MacOS/Pomodoro\ Timer \
+            -output dist/universal/Pomodoro\ Timer.app/Contents/MacOS/Pomodoro\ Timer
+
+      - name: Copy remaining resources
+        run: |
+          cp -R dist/arm64/Pomodoro\ Timer.app/Contents/Resources/* \
+            dist/universal/Pomodoro\ Timer.app/Contents/Resources/
+
+      - name: Upload universal artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pomodoro-Timer-universal
+          path: dist/universal/Pomodoro\ Timer.app
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg
+          hdiutil create -volname "Pomodoro Timer" \
+                         -srcfolder dist/universal/Pomodoro\ Timer.app \
+                         -ov -format UDZO dist/dmg/Pomodoro-Timer.dmg
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload universal app to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/universal/Pomodoro\ Timer.app
+          asset_name: Pomodoro-Timer.app
+          asset_content_type: application/octet-stream
+
+      - name: Upload DMG to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/dmg/Pomodoro-Timer.dmg
+          asset_name: Pomodoro-Timer.dmg
+          asset_content_type: application/octet-stream
