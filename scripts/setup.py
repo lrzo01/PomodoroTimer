@@ -11,7 +11,6 @@ OPTIONS = {
     },
     'packages': find_packages(where='src'),  
     'resources': ['assets'], 
-    'codesign': False
 }
 
 setup(

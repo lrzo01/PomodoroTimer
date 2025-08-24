@@ -95,13 +95,6 @@ jobs:
           name: Pomodoro-Timer-universal
           path: dist/universal/Pomodoro\ Timer.app
 
-      - name: Create DMG
-        run: |
-          mkdir -p dist/dmg
-          hdiutil create -volname "Pomodoro Timer" \
-                         -srcfolder dist/universal/Pomodoro\ Timer.app \
-                         -ov -format UDZO dist/dmg/Pomodoro-Timer.dmg
-
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -116,12 +109,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: dist/universal/Pomodoro\ Timer.app
           asset_name: Pomodoro-Timer.app
-          asset_content_type: application/octet-stream
-
-      - name: Upload DMG to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/dmg/Pomodoro-Timer.dmg
-          asset_name: Pomodoro-Timer.dmg
           asset_content_type: application/octet-stream
