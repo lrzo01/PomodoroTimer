@@ -25,7 +25,7 @@ jobs:
         run: poetry install --no-root
 
       - name: Build py2app x86_64
-        run: poetry run python scripts/setup.py py2app
+        run: poetry run python scripts/setup.py py2app --no-sign
 
       - name: Upload x86_64 artifact
         uses: actions/upload-artifact@v4
@@ -52,7 +52,7 @@ jobs:
         run: poetry install --no-root
 
       - name: Build py2app arm64
-        run: poetry run python scripts/setup.py py2app
+        run: poetry run python scripts/setup.py py2app --no-sign
 
       - name: Upload arm64 artifact
         uses: actions/upload-artifact@v4
