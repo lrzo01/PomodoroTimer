@@ -30,7 +30,7 @@ jobs:
           python scripts/setup.py py2app
 
       - name: Upload x86_64 artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Pomodoro-Timer-x86_64
           path: dist/Pomodoro\ Timer.app
@@ -59,7 +59,7 @@ jobs:
           python scripts/setup.py py2app
 
       - name: Upload arm64 artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Pomodoro-Timer-arm64
           path: dist/Pomodoro\ Timer.app
@@ -69,13 +69,13 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Download x86_64 artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Pomodoro-Timer-x86_64
           path: dist/x86_64
 
       - name: Download arm64 artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Pomodoro-Timer-arm64
           path: dist/arm64
@@ -94,7 +94,7 @@ jobs:
             dist/universal/Pomodoro\ Timer.app/Contents/Resources/
 
       - name: Upload universal artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Pomodoro-Timer-universal
           path: dist/universal/Pomodoro\ Timer.app
